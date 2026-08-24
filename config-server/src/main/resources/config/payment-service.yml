@@ -1,0 +1,30 @@
+server:
+  port: 8083
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5434/payment_db
+    username: bank
+    password: bank123
+  jpa:
+    hibernate:
+      ddl-auto: none
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: payment-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.bank.payment.event,com.bank.transaction.event,java.util,java.lang"
+
+app:
+  outbox:
+    notification-poll-ms: 1000
+    ledger-poll-ms: 10000
+    retry-poll-ms: 30000
+    sending-reaper-ms: 300000
+    batch-max-size: 500

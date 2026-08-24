@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # ==================== DATABASES ====================
+  postgres-auth:
+    image: postgres:16-alpine
+    container_name: postgres-auth
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: bank
+      POSTGRES_PASSWORD: bank123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_auth:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bank -d auth_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres-account:
+    image: postgres:16-alpine
+    container_name: postgres-account
+    environment:
+      POSTGRES_DB: account_db
+      POSTGRES_USER: bank
+      POSTGRES_PASSWORD: bank123
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_account:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bank -d account_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres-payment:
+    image: postgres:16-alpine
+    container_name: postgres-payment
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: bank
+      POSTGRES_PASSWORD: bank123
+    ports:
+      - "5434:5432"
+    volumes:
+      - pg_payment:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bank -d payment_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres-transaction:
+    image: postgres:16-alpine
+    container_name: postgres-transaction
+    environment:
+      POSTGRES_DB: transaction_db
+      POSTGRES_USER: bank
+      POSTGRES_PASSWORD: bank123
+    ports:
+      - "5435:5432"
+    volumes:
+      - pg_transaction:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bank -d transaction_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres-notification:
+    image: postgres:16-alpine
+    container_name: postgres-notification
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: bank
+      POSTGRES_PASSWORD: bank123
+    ports:
+      - "5436:5432"
+    volumes:
+      - pg_notification:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bank -d notification_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ==================== MESSAGING ====================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== TRACING ====================
+  zipkin:
+    image: openzipkin/zipkin:3
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+
+volumes:
+  pg_auth:
+  pg_account:
+  pg_payment:
+  pg_transaction:
+  pg_notification:

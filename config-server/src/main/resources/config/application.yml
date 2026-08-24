@@ -1,0 +1,27 @@
+# ─── Shared Config: Common ───
+# Applied to ALL services
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+logging:
+  pattern:
+    console: "%d{ISO8601} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
+
+app:
+  gateway:
+    secret: ${GATEWAY_SECRET:gateway-internal-secret-do-not-expose}
