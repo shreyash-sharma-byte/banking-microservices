@@ -46,6 +46,21 @@ This is not a toy CRUD app:
 - **Distributed tracing** — correlation IDs propagated on every request,
   Zipkin for tracing, structured logs.
 
+## Screenshots (banking-ui, Angular 22)
+
+The Angular frontend (`banking-ui`) talking to the live platform — login,
+dashboard, transfer, and transaction history against the real gateway and
+services (Postgres + Kafka + ledger):
+
+| Dashboard | Transfer | History |
+|---|---|---|
+| ![Dashboard](docs/dashboard.png) | ![Transfer](docs/transfer.png) | ![History](docs/history.png) |
+
+The transfer shown in the screenshots was executed end-to-end through the
+platform: gateway → payment-service (idempotency + outbox) → Kafka →
+transaction-service (immutable ledger) — visible as the DEBIT entry in the
+dashboard and History views.
+
 ## Architecture
 
 ```

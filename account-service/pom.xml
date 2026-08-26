@@ -36,18 +36,5 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- Test-only: newer byte-buddy so Mockito inline mocks work on newer JDKs (e.g. Java 24) -->
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-            <version>1.17.6</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy-agent</artifactId>
-            <version>1.17.6</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>
