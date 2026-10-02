@@ -52,22 +52,45 @@ kafkaTemplate.send("ledger-confirm", {
 
 ### View Transaction History (by Account)
 ```
-GET /api/transactions?accountId={id}&page=0&size=20
-  → Verify accountId belongs to JWT.sub:
-      Call Account GET /api/accounts/{accountId} (internal)
-      owner_id must = JWT.sub (RETAIL/BUSINESS) OR role=EMPLOYEE/ADMIN/AUDITOR
-      Mismatch → 403
+GET /api/transactions?accountId={id}&type=&minAmount=&maxAmount=&startDate=&endDate=&page=0&size=20
   → SELECT * FROM unified_ledger
-    WHERE account_id=?
+    WHERE account_id=?          (if accountId provided)
+      AND entry_type=?          (if type provided)
+      AND amount >= ?           (if minAmount provided)
+      AND amount <= ?           (if maxAmount provided)
+      AND occurred_at >= ?      (if startDate provided)
+      AND occurred_at <  ?      (endDate + 1 day)
     ORDER BY occurred_at DESC
     LIMIT ? OFFSET ?
-  → Return { content: [...], page, size, totalElements }
+  → Return a BARE JSON ARRAY of rows — NOT the { content, page, size,
+    totalElements } envelope this document previously described:
+      [ { id, eventId, sourceService, accountId, entryType, amount,
+          reference, occurredAt, ingestedAt, correlationId }, ... ]
 ```
+
+### Search Transactions (POST — filters in the body)
+```
+POST /api/transactions/search
+Body: { accountId?, type?, minAmount?, maxAmount?, startDate?, endDate?, page=0, size=20 }
+  → Same query and same response as the GET form above (both call buildResult()).
+    The frontend prefers this variant so account ids never travel in URLs.
+  → Return a BARE JSON ARRAY (identical shape to GET).
+```
+
+⚠️ **Known gap: ownership is NOT enforced.** Both endpoints filter
+`unified_ledger` by `accountId` without checking that the caller owns that
+account — the gateway forwards `X-User-Id` / `X-User-Role`, but this controller
+ignores them, and `buildResult()` performs no account-service lookup. Any
+authenticated user can therefore read any account's ledger by passing its id
+(a classic IDOR). The GET section above used to *document* an ownership check
+that the code has never performed. The fix is to resolve the account through
+account-service and compare `owner_id`, granting EMPLOYEE/ADMIN/AUDITOR
+unrestricted access, exactly as the other services do.
 
 ### View Transaction History (Filtered)
 ```
 GET /api/transactions?accountId={id}&type=DEBIT&minAmount=5000&startDate=2026-06-01&endDate=2026-06-30&page=0&size=20
-  → Same ownership check as above
+  → No ownership check — see the known gap above (applies to this form too)
   → SELECT * FROM unified_ledger
     WHERE account_id=?
       AND entry_type=?          (if provided)
@@ -119,6 +142,7 @@ GET /api/transactions/daily-summary?date=2026-07-23
 ## Exposed Endpoints Summary
 ```
 GET   /api/transactions                  (list, ?accountId & ?page & ?size & filters)
+POST  /api/transactions/search           (same as GET, filters in body — no ids in URL)
 GET   /api/transactions/{entryId}        (single entry)
 GET   /api/transactions/daily-summary    (aggregated, EMPLOYEE+)
 ```

@@ -16,6 +16,12 @@ CREATE TABLE IF NOT EXISTS unified_ledger (
 CREATE TABLE IF NOT EXISTS unified_ledger_2026_08 PARTITION OF unified_ledger
     FOR VALUES FROM ('2026-08-01') TO ('2026-09-01');
 
+-- Safety net — see the same note in account-service/schema.sql. Without this,
+-- the ledger consumer fails on the first entry occurring outside the declared
+-- months and every batch is marked FAILED, so transfers complete at the bank
+-- but never reach the ledger. Concrete months go before this declaration.
+CREATE TABLE IF NOT EXISTS unified_ledger_default PARTITION OF unified_ledger DEFAULT;
+
 CREATE TABLE IF NOT EXISTS processed_batches (
     batch_id        UUID PRIMARY KEY,
     entry_count     INT NOT NULL DEFAULT 0,

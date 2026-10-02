@@ -7,9 +7,17 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins:
-              - "http://localhost:4200"
-              - "http://localhost:4201"
+            # Any localhost port (ng serve uses 4200+) works out of the box; a
+            # real deployment overrides this with its own origin(s), e.g.
+            #   CORS_ALLOWED_ORIGIN_PATTERNS=https://demo.example.com
+            # allowedOriginPatterns (not allowedOrigins) is required because
+            # allowCredentials is true — the literal "*" is illegal in
+            # allowedOrigins when credentials are enabled.
+            #
+            # Pinning this to hardcoded origins breaks every deployment that is
+            # not a browser on this machine: browsers send Origin even on
+            # same-origin POSTs, so login fails with 403 while curl succeeds.
+            allowedOriginPatterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*}
             allowedMethods: "*"
             allowedHeaders: "*"
             allowCredentials: true

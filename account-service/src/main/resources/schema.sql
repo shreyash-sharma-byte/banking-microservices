@@ -56,6 +56,16 @@ CREATE TABLE IF NOT EXISTS audit_log (
 CREATE TABLE IF NOT EXISTS audit_log_2026_08 PARTITION OF audit_log
     FOR VALUES FROM ('2026-08-01') TO ('2026-09-01');
 
+-- Safety net. A range-partitioned table with no matching partition REJECTS the
+-- INSERT ("no partition of relation \"audit_log\" found for row"), and the
+-- audit row is written inside the same transaction as account creation and as
+-- every transfer — so a missing month turns into a 500 on both. Declaring only
+-- concrete months means the platform works until the calendar moves past the
+-- last one and then breaks everywhere at once. The DEFAULT partition makes an
+-- unroutable row impossible; add concrete months (for pruning/retention) before
+-- this one, never after.
+CREATE TABLE IF NOT EXISTS audit_log_default PARTITION OF audit_log DEFAULT;
+
 CREATE TABLE IF NOT EXISTS business_employees (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     business_id     UUID NOT NULL,
