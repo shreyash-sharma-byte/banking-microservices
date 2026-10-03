@@ -1,5 +1,7 @@
 # 🏦 Banking Microservices Platform
 
+**Live demo:** https://lighting-fellowship-gordon-post.trycloudflare.com — sign in with any demo account shown on the sign-in page.
+
 A production-shaped **Java/Spring microservices platform** for a retail + business
 bank — accounts, atomic money transfers, an event-driven payment pipeline, an
 immutable unified ledger, and role-based access across five services behind an
