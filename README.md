@@ -48,18 +48,27 @@ This is not a toy CRUD app:
 
 ## Screenshots (banking-ui, Angular 22)
 
-The Angular frontend (`banking-ui`) talking to the live platform — login,
-dashboard, transfer, and transaction history against the real gateway and
-services (Postgres + Kafka + ledger):
+The Angular client (`banking-ui`) against the live platform — the pre-login front
+page, the sign-in screen, the dashboard, a transfer and the ledger history. Its
+own repository is
+[`banking-ui`](https://github.com/shreyashsharmaprojects-del/banking-ui).
+
+| Welcome (pre-login) | Sign in |
+|---|---|
+| ![Welcome screen](docs/welcome.png) | ![Sign in](docs/sign-in.png) |
 
 | Dashboard | Transfer | History |
 |---|---|---|
 | ![Dashboard](docs/dashboard.png) | ![Transfer](docs/transfer.png) | ![History](docs/history.png) |
 
-The transfer shown in the screenshots was executed end-to-end through the
-platform: gateway → payment-service (idempotency + outbox) → Kafka →
-transaction-service (immutable ledger) — visible as the DEBIT entry in the
-dashboard and History views.
+The sign-in screen prints the demo accounts on the page itself, so a visitor can
+use the demo without being told the credentials out of band.
+
+The Dashboard and History views show entries written by transfers that ran
+end-to-end through the platform: gateway → payment-service (idempotency +
+outbox) → Kafka → transaction-service (immutable ledger), each appearing as a
+DEBIT entry. The Transfer screen shows the recipient search resolving a real
+account before the form will submit.
 
 ## Architecture
 
